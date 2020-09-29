@@ -1,0 +1,8 @@
+name: psass-env
+channels:
+    - conda-forge
+    - bioconda
+dependencies:
+    - bwa == 0.7.17
+    - samtools == 1.10
+    - psass == 3.0.1b

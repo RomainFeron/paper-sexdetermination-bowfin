@@ -1,0 +1,140 @@
+# All paths are relative to the pipeline's directory
+
+################################################################################
+####################################  DATA  ####################################
+################################################################################
+
+# Path to the assembly file (fasta)
+assembly: '/work/project/perch/Bowfin_poolsex/genome/AmiCal1_PESF00000000.fasta'
+
+# Path to a GFF file for gene-level metrics (leave blank if no GFF file)
+gff: /work/project/perch/Bowfin_poolsex/genome/AMC_annotation_reduced.gff
+
+# Paths to the reads files.
+# Reads file are organized first by pool (e.g. "females").
+# If there are more than two pools, all pairwise comparisons will be performed.
+# Within each pool, reads are organized by sequencing lane and then
+# by "read-pair" files (R1, R2). If sequencing was not paired-end, just specify
+# the path to the reads file, e.g. 'L001: data/reads/reads.fq.gz'.
+# If sequencing was done on a single lane, specify the lane nonetheless.
+reads:
+    males:
+        L004:
+            R1: /work/project/perch/Project_PhyloSex.280/Run_bowfin/A-clava-M_CGGACAAC-TCCGGATT-BHVWNNDSXX_L004_R1.fastq.gz
+            R2: /work/project/perch/Project_PhyloSex.280/Run_bowfin/A-clava-M_CGGACAAC-TCCGGATT-BHVWNNDSXX_L004_R2.fastq.gz
+    females:
+        L004:
+            R1: /work/project/perch/Project_PhyloSex.280/Run_bowfin/A-clava-F_TAAGTGGT-CTTAAGCC-BHVWNNDSXX_L004_R1.fastq.gz
+            R2: /work/project/perch/Project_PhyloSex.280/Run_bowfin/A-clava-F_TAAGTGGT-CTTAAGCC-BHVWNNDSXX_L004_R2.fastq.gz
+
+
+################################################################################
+##########################  TOOL-SPECIFIC PARAMETERS  ##########################
+################################################################################
+
+bwa_index:
+    extra:  # These parameters will be directly passed to bwa index
+
+bwa_mem:
+    extra:  # These parameters will be directly passed to bwa mem
+
+samtools sort:
+    extra:  # These parameters will be directly passed to samtools sort
+
+samtools merge:
+    extra:  # These parameters will be directly passed to samtools merge
+
+samtools rmdup:
+    extra:  # These parameters will be directly passed to samtools rmdup
+
+psass_pileup:
+    min_quality: 0  # Minimum mapping quality to retain a read in pileup
+    extra:  # These parameters will be directly passed to psass pileup
+
+
+################################################################################
+#################################  PSASS RUNS  #################################
+################################################################################
+
+
+# Each run is defined by its name which will be the prefix for the
+# output of PSASS 'analyze'.
+# All PSASS parameters are specified by their name without the trailing '--'
+# (e.g. "--pool1" becomes "pool1"). For flags (i.e. parameters set to True when
+# set, like --group-snps), specify the flag name and set the value to True
+# (e.g. group-snps: True).
+# For a complete description of PSASS parameters, check the documentation
+# (https://github.com/RomainFeron/PSASS).
+psass:
+    relaxed:
+        freq-het: 0.5
+        range-het: 0.25
+        freq-hom: 1
+        range-hom: 0.1
+        window-size: 50000
+        output-resolution: 10000
+        group-snps: True
+    relaxed_stringent:
+        freq-het: 0.5
+        range-het: 0.25
+        freq-hom: 1
+        range-hom: 0
+        window-size: 50000
+        output-resolution: 10000
+        group-snps: True
+    relaxed_medium:
+        freq-het: 0.5
+        range-het: 0.25
+        freq-hom: 1
+        range-hom: 0.05
+        window-size: 50000
+        output-resolution: 10000
+        group-snps: True
+
+
+################################################################################
+##################################  RESOURCES  #################################
+################################################################################
+
+# Specify the type of scheduler used to run the pipeline.
+# This parameter controls the final format of resources values,
+# e.g. runtime is 'D-HH:MM:SS' for slurm and 'hour:minutes' for LSF,
+# or memory is in Mb for slurm and '<N>K/M/G' for SGE.
+# Resources are always specified with the same format in this config file, and
+# conversion to scheduler-specific formats should be handled by profiles.
+# Because resources have to be integers, the 'output' format for each resource
+# (i.e. the value of the 'resources' field passed to a profile) is Mb for
+# 'mem_mb', seconds for 'runtime', and number of threads for 'threads'.
+scheduler: slurm
+
+# Simplified resources specification using presets
+presets:
+    mem_mb:                   ###### Memory in Mb
+        tiny: 4000            # BWA index, samtools rmdup, psass, psass-vis
+        small: 8000           # Samtools merge
+        medium: 16000         # BWA mem, samtools sort
+        large: 32000          # PSASS pileup
+    runtime:                  ###### Maximum runtime (format: D-HH:MM:SS)
+        tiny: '0-02:00:00'    # BWA index, psass, psass-vis
+        short: '0-04:00:00'   # Samtools sort, samtools merge
+        medium: '0-12:00:00'  # Samtools rmdup, PSASS pileup
+        long: '1-00:00:00'    # BWA mem
+    threads:                  ###### Threads
+        tiny: 1               # All rules not using multiple threads
+        small: 4
+        medium: 8             # Samtools sort, samtools merge
+        large: 24             # Bwa mem
+
+# File describing resources to use for each rule.
+# Only edit if you know what you are doing
+resources_info: cfg/resources.yaml
+
+# Resources can be manually specified for each rule and will override the
+# resources file specifications.
+#
+# resources:
+#     bwa_mem:
+#         threads: 32
+#         mem_mb: 32000
+resources:
+

@@ -16,3 +16,7 @@ Scripts used to identify sex-biased kmers are provided in `kpool/`; they require
 - jellyfish_dump_male.sh
 - merge_table.sh
 - filter_table.sh
+
+## Generate basic figure
+
+Data and an R script to generate the base figure included in the paper are provided in `figure`. You only need to replace the folder path with that of the `figure` folder in the R script to replicate the figure.
